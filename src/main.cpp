@@ -1,3 +1,4 @@
+#include <atomic>
 #include <chrono>
 #include <cmath>
 #include <iostream>
@@ -26,8 +27,7 @@ const unsigned max_iterations = 500;
 
 const unsigned num_sections = std::thread::hardware_concurrency(); // The number of cores
 const unsigned section_offset = static_cast<unsigned>(num_ys/num_sections);
-unsigned sections_completed = 0;
-std::mutex sections_completed_mutex;
+std::atomic<unsigned> sections_completed = 0;
 
 std::vector<float> progresses;
 auto update_freq = 100ms; // Update the user every 100ms
@@ -70,7 +70,6 @@ void compute_section(unsigned section) {
         }
     }
 
-    std::lock_guard<std::mutex> lock(sections_completed_mutex);
     sections_completed += 1;
 }
 
