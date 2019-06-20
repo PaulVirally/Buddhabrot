@@ -14,42 +14,42 @@
 
 using namespace std::chrono_literals;
 
-const float min_x = -2;
-const float max_x = 1;
-const float min_y = -1.125;
-const float max_y = 1.125;
-const float x_skip = 0.001;
-const float y_skip = 0.001;
-const int num_xs = (max_x - min_x)/x_skip;
-const int num_ys = (max_y - min_y)/y_skip;
+const long double min_x = -2.L;
+const long double max_x = 1.L;
+const long double min_y = -1.125L;
+const long double max_y = 1.125L;
+const long double x_skip = 0.001L;
+const long double y_skip = 0.001L;
+const size_t num_xs = (max_x - min_x)/x_skip;
+const size_t num_ys = (max_y - min_y)/y_skip;
 std::vector<Color> data(num_xs * num_ys * 3, Color(0, 0, 0));
 std::mutex data_mutex;
 
 const size_t max_iterations = 500;
 
 const size_t num_sections = std::thread::hardware_concurrency(); // The number of cores
-const int section_offset = num_ys/num_sections;
+const size_t section_offset = num_ys/num_sections;
 std::atomic<size_t> sections_completed = 0;
 
-std::vector<float> progresses;
+std::vector<long double> progresses;
 auto update_freq = 100ms; // Update the user every 100ms
 int num_update_cols = 40; // Number of columns in the progress bar
 
 void compute_section(size_t section) {
-    float area = static_cast<float>(section_offset * num_xs); // the area this thread will cover
-    float delta_progress = 0;
+    long double area = static_cast<long double>(section_offset * num_xs); // the area this thread will cover
+    long double delta_progress = 0;
 
     for (size_t y_idx = section; y_idx < num_ys; y_idx += num_sections) {
         for (size_t x_idx = 0; x_idx < num_xs; ++x_idx) {
-            const float a = x_idx*x_skip + min_x;
-            const float b = y_idx*y_skip + min_y;
+            const long double a = x_idx*x_skip + min_x;
+            const long double b = y_idx*y_skip + min_y;
 
             bool in_set = true;
-            float new_a = a;
-            float new_b = b;
+            long double new_a = a;
+            long double new_b = b;
             for (size_t i = 0; i < max_iterations; ++i) {
-                float temp_a = new_a;
-                float temp_b = new_b;
+                long double temp_a = new_a;
+                long double temp_b = new_b;
                 new_a = temp_a*temp_a - temp_b*temp_b + a;
                 new_b = 2*temp_a*temp_b + b;
 
@@ -93,20 +93,20 @@ void notify_user() {
         }
         std::cout << "\033[1mTotal:     [";
 
-        float total = std::accumulate(progresses.begin(), progresses.end(), 0.f);
-        total /= static_cast<float>(num_sections);
+        long double total = std::accumulate(progresses.begin(), progresses.end(), 0.f);
+        total /= static_cast<long double>(num_sections);
 
         int prog_bar_fill = static_cast<int>(std::round(total * num_update_cols));
         std::cout << std::setfill('#') << std::setw(prog_bar_fill) << "";
         std::cout << std::setfill(' ') << std::setw(num_update_cols - prog_bar_fill) << "";
         std::cout << "] (" << static_cast<int>(std::round(total * 100)) << "% done)\033[0m\n";
 
-        std::chrono::duration<float> duration = std::chrono::high_resolution_clock::now() - start_time;
+        std::chrono::duration<long double> duration = std::chrono::high_resolution_clock::now() - start_time;
         int hours = duration.count()/3600;
         int mins = duration.count()/60 - hours*60;
         int secs = duration.count() - mins*60 - hours*3600;
 
-        float least_area = *std::min_element(progresses.begin(), progresses.end());
+        long double least_area = *std::min_element(progresses.begin(), progresses.end());
         int time_rem = duration.count()/least_area - duration.count();
         int hours_rem = time_rem/3600;
         int mins_rem = time_rem/60 - hours_rem*60;
@@ -126,7 +126,7 @@ int main() {
 
     std::cout << "\033[?25l"; // Hide the cursor
 
-    progresses = std::vector<float>(num_sections, 0);
+    progresses = std::vector<long double>(num_sections, 0.L);
     for (size_t i = 0; i < num_sections+1; ++i) {
         std::cout << "\n";
     }
