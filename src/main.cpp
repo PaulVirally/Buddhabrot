@@ -37,7 +37,7 @@ void compute_section(unsigned section) {
     float area = static_cast<float>(section_offset * num_xs); // the area this thread will cover
     float delta_progress = 0;
 
-    for (unsigned y_idx = section*section_offset; y_idx < (section+1)*section_offset; ++y_idx) {
+    for (unsigned y_idx = section; y_idx < num_ys; y_idx += num_sections) {
         for (unsigned x_idx = 0; x_idx < num_xs; ++x_idx) {
             const float a = x_idx*x_skip + min_x;
             const float b = y_idx*y_skip + min_y;
