@@ -6,6 +6,6 @@
 #include <vector>
 #include "Color.hpp"
 
-void write_png(const std::string &filename, const unsigned width, const unsigned height, std::vector<Color> &buffer);
+void write_png(const std::string &filename, const size_t width, const size_t height, std::vector<Color> &buffer);
 
 #endif /* UTILS_HPP */
