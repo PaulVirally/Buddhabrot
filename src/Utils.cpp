@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <stdio.h>
 #include "Utils.hpp"
 
@@ -46,4 +47,13 @@ void write_png(const std::string &filename, const size_t width, const size_t hei
 	if (fp != nullptr) fclose(fp);
 	if (info_ptr != nullptr) png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
 	if (png_ptr != nullptr) png_destroy_write_struct(&png_ptr, nullptr);
+}
+
+template<class ForwardIt, class T>
+ForwardIt binary_search_elem(ForwardIt first, ForwardIt last, T &value) {
+	ForwardIt it = std::lower_bound(first, last, val);
+	if (it != last && *(value < *it)) {
+		return it
+	}
+	return last;
 }
