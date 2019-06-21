@@ -12,11 +12,11 @@ struct Color {
 };
 
 struct ColorHSV {
-    png_byte h;
-    png_byte s;
-    png_byte v;
+    int h;
+    float s;
+    float v;
 
-    ColorHSV(png_byte h, png_byte s, png_byte v);
+    ColorHSV(int h, float s, float v);
 
     operator Color() const;
 };
