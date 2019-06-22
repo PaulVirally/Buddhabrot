@@ -9,6 +9,8 @@ struct Color {
     png_byte b;
 
     Color(png_byte r, png_byte g, png_byte b);
+
+    Color& operator+=(const Color &rhs);
 };
 
 struct ColorHSV {

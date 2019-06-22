@@ -9,6 +9,13 @@ Color::Color(png_byte r, png_byte g, png_byte b) {
     this->b = b;
 }
 
+Color& Color::operator+=(const Color &rhs) {
+    this->r += rhs.r;
+    this->g += rhs.g;
+    this->b += rhs.b;
+    return *this;
+}
+
 ColorHSV::ColorHSV(int h, float s, float v) {
     this->h = h;
     this->s = s;
