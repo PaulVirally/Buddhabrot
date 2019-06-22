@@ -10,9 +10,9 @@ Color::Color(png_byte r, png_byte g, png_byte b) {
 }
 
 Color& Color::operator+=(const Color &rhs) {
-    if (this->r != 255) this->r += rhs.r;
-    if (this->g != 255) this->g += rhs.g;
-    if (this->b != 255) this->b += rhs.b;
+    if (255 - this->r > rhs.r) this->r += rhs.r;
+    if (255 - this->g > rhs.g) this->g += rhs.g;
+    if (255 - this->b > rhs.b) this->b += rhs.b;
     return *this;
 }
 
