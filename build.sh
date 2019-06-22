@@ -24,6 +24,13 @@ if [ $# -eq 1 ] && [ $1 == "release" ]; then
         printf '\e[0m\n\n'
         "./$exec"
     fi
+elif [ $# -eq 1 ] && [ $1 == "debug-build-only" ]; then
+    # Go into the build directory
+    mkdir -p release-build
+    cd release-build
+
+    # Compile
+    cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON && make
 else
     # Go into the build directory
     mkdir -p debug-build
