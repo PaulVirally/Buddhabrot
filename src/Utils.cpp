@@ -1,4 +1,4 @@
-#include <algorithm>
+#include <iterator>
 #include <stdio.h>
 #include "Utils.hpp"
 
@@ -49,11 +49,32 @@ void write_png(const std::string &filename, const size_t width, const size_t hei
 	if (png_ptr != nullptr) png_destroy_write_struct(&png_ptr, nullptr);
 }
 
-template<class ForwardIt, class T>
-ForwardIt binary_search_elem(ForwardIt first, ForwardIt last, T &value) {
-	ForwardIt it = std::lower_bound(first, last, val);
-	if (it != last && *(value < *it)) {
-		return it
+std::vector<Point>::iterator find_first_y(std::vector<Point>::iterator start, std::vector<Point>::iterator end, size_t y) {
+	auto lower_bound = start;
+	auto upper_bound = end-1;
+
+	if (y < lower_bound->y) return end; // Does not exist in vector
+	if (y > upper_bound->y) return end; // Does not exist in vector
+
+	auto test = lower_bound;
+	auto distance = std::distance(lower_bound, upper_bound);
+	while (true) {
+		test = lower_bound;
+		std::advance(test, distance/2);
+
+		if (test->y >= y) {
+			upper_bound = test;
+		}
+		else {
+			lower_bound = test;
+			if (lower_bound->y == y) {
+				return lower_bound;
+			}
+		}
+
+		distance = std::distance(lower_bound, upper_bound);
+		if (distance <= 1) {
+			return (lower_bound->y == y) ? lower_bound : ((upper_bound->y == y) ? upper_bound : end);
+		}
 	}
-	return last;
 }
