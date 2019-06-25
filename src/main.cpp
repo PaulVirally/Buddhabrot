@@ -29,9 +29,9 @@ std::vector<Color> data(num_xs * num_ys * 3, Color(0, 0, 0));
 std::mutex data_mutex;
 
 const size_t min_iterations = 1000;
-const size_t max_iterations = 10000; // 5000000? 1/10 prob?
+const size_t max_iterations = 1000000; // 5000000? 1/10 prob?
 
-const double sample_probability = 1.L/4.L; // The probability a random point will be sampled
+const double sample_probability = 1.L/10.L; // The probability a random point will be sampled
 std::vector<Point> samples;
 std::mutex samples_mutex;
 
@@ -102,7 +102,6 @@ void compute_section(size_t section) {
         if (point == samples.end()) continue; // We did not find a y value
 
         for (; point->y == y_idx; ++point) {            
-            data[y_idx*num_xs + point->x] += Color(1, 1, 1);
             const long double a = point->x*x_skip + min_x;
             const long double b = y_idx*y_skip + min_y;
 
