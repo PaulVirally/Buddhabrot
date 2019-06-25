@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "Utils.hpp"
 
-void write_png(const std::string &filename, const size_t width, const size_t height, std::vector<Color> &buffer) {	
+void write_png(const std::string &filename, const size_t width, const size_t height, std::vector<ColorHSV> &buffer) {	
 	// Open file for writing (binary mode)
 	FILE* fp = fopen(filename.c_str(), "wb");
 	if (fp == nullptr) {
@@ -36,9 +36,10 @@ void write_png(const std::string &filename, const size_t width, const size_t hei
     std::vector<png_byte> row(3 * width * sizeof(png_byte), 0); // Allocate memory for one row (3 bytes per pixel - RGB)
 	for (size_t y = 0; y < height; ++y) {
         for (size_t x = 0; x < width; ++x) {
-            row[x*3 + 0] = buffer[y*width + x].r;
-            row[x*3 + 1] = buffer[y*width + x].g;
-            row[x*3 + 2] = buffer[y*width + x].b;
+			Color c = buffer[y*width + x];
+            row[x*3 + 0] = c.r;
+            row[x*3 + 1] = c.g;
+            row[x*3 + 2] = c.b;
         }
 		png_write_row(png_ptr, &(row[0]));
 	}
