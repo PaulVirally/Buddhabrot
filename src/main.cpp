@@ -20,18 +20,18 @@ const long double min_x = -2.L;
 const long double max_x = 1.L;
 const long double min_y = -1.125L;
 const long double max_y = 1.125L;
-const long double x_skip = 0.001L;
-const long double y_skip = 0.001L;
+const long double x_skip = 0.0001L;
+const long double y_skip = 0.0001L;
 const size_t num_xs = (max_x - min_x)/x_skip;
 const size_t num_ys = (max_y - min_y)/y_skip;
 
-std::vector<Color> data(num_xs * num_ys * 3, Color(0, 0, 0));
+std::vector<ColorHSV> data(num_xs * num_ys * 3, ColorHSV(0, 1.f, 0.f));
 std::mutex data_mutex;
 
-const size_t min_iterations = 10000;
-const size_t max_iterations = 100000; // 5000000? 1/10 prob?
+const size_t min_iterations = 1000000;
+const size_t max_iterations = 5000000;
 
-const double sample_probability = 1.L/10.L; // The probability a random point will be sampled
+const double sample_probability = 1.L/4.L; // The probability a random point will be sampled
 std::vector<Point> samples;
 std::mutex samples_mutex;
 
@@ -47,6 +47,7 @@ const size_t num_colors = 5;
 const ColorHSV colors[num_colors] = {ColorHSV(  0, 1.f, 1.f), ColorHSV( 30, 1.f, 1.f),
                                      ColorHSV(120, 1.f, 1.f), ColorHSV(200, 1.f, 1.f),
                                      ColorHSV(280, 1.f, 1.f)};
+const float modulation_factor = 10.f;
 
 void sample_orbits(size_t section) {
     long double area = static_cast<long double>(section_offset * num_xs); // The area this thread will cover
@@ -120,7 +121,13 @@ void compute_section(size_t section) {
                 const size_t y = (new_b - min_y)/y_skip;
                 const size_t idx = y*num_xs + x;
                 if (idx < 0 || idx >= data.size()) continue;
-                data[y*num_xs + x] = static_cast<Color>(colors[color_idx]);
+                {
+                    std::lock_guard<std::mutex> lock(data_mutex);
+                    data[idx].h = data[idx].h == 0 ? colors[color_idx].h : data[idx].h;
+                    data[idx].s -= 0.2f;
+                    data[idx].v += 0.2f;
+                    std::clamp(data[idx].v, 0.f, 1.f);
+                }
             }
             color_idx = (color_idx+1)%num_colors;
         }
@@ -223,6 +230,11 @@ int main() {
         it->join();
     }
     notify_compute_thread.join();
+
+    for (auto it = data.begin(); it != data.end(); ++it) {
+        if (it->s <= 0.4) it->s = std::powf(it->s, modulation_factor);
+        it->v = std::powf(it->v, 1.f/modulation_factor);
+    }
 
     std::cout << "\r\033[?25h" << std::endl; // Show the cursor again
 
