@@ -39,7 +39,7 @@ const size_t num_sections = std::thread::hardware_concurrency(); // The number o
 const size_t section_offset = num_ys/num_sections;
 
 std::vector<long double> progresses;
-auto update_freq = 100ms; // Update the user every 100ms
+auto update_freq = 200ms; // Update the user every 200ms
 int num_update_cols = 40; // Number of columns in the progress bar
 std::atomic<size_t> sections_completed = 0;
 
