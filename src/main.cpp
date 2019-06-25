@@ -28,8 +28,8 @@ const size_t num_ys = (max_y - min_y)/y_skip;
 std::vector<Color> data(num_xs * num_ys * 3, Color(0, 0, 0));
 std::mutex data_mutex;
 
-const size_t min_iterations = 1000;
-const size_t max_iterations = 1000000; // 5000000? 1/10 prob?
+const size_t min_iterations = 10000;
+const size_t max_iterations = 100000; // 5000000? 1/10 prob?
 
 const double sample_probability = 1.L/10.L; // The probability a random point will be sampled
 std::vector<Point> samples;
@@ -43,10 +43,10 @@ auto update_freq = 200ms; // Update the user every 200ms
 int num_update_cols = 40; // Number of columns in the progress bar
 std::atomic<size_t> sections_completed = 0;
 
-const size_t num_colors = 7;
-const ColorHSV colors[num_colors] = {ColorHSV(  0, 1.f, 1.f), ColorHSV( 30, 1.f, 1.f), ColorHSV( 90, 1.f, 1.f),
-                                     ColorHSV(180, 1.f, 1.f), ColorHSV(200, 1.f, 1.f), ColorHSV(260, 1.f, 1.f),
-                                     ColorHSV(300, 1.f, 1.f)};
+const size_t num_colors = 5;
+const ColorHSV colors[num_colors] = {ColorHSV(  0, 1.f, 1.f), ColorHSV( 30, 1.f, 1.f),
+                                     ColorHSV(120, 1.f, 1.f), ColorHSV(200, 1.f, 1.f),
+                                     ColorHSV(280, 1.f, 1.f)};
 
 void sample_orbits(size_t section) {
     long double area = static_cast<long double>(section_offset * num_xs); // The area this thread will cover
