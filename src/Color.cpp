@@ -23,9 +23,9 @@ ColorHSV::ColorHSV(int h, float s, float v) {
 }
 
 ColorHSV::operator Color() const {
-    float kr = std::fmodf(5 + h/60, 6);
-    float kg = std::fmodf(3 + h/60, 6);
-    float kb = std::fmodf(1 + h/60, 6);
+    float kr = std::fmodf(5 + h/60.f, 6);
+    float kg = std::fmodf(3 + h/60.f, 6);
+    float kb = std::fmodf(1 + h/60.f, 6);
     png_byte r = static_cast<png_byte>(255.f * (v - v*s * std::max(std::min(kr, std::min(4-kr, 1.f)), 0.f)));
     png_byte g = static_cast<png_byte>(255.f * (v - v*s * std::max(std::min(kg, std::min(4-kg, 1.f)), 0.f)));
     png_byte b = static_cast<png_byte>(255.f * (v - v*s * std::max(std::min(kb, std::min(4-kb, 1.f)), 0.f)));
