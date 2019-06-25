@@ -20,16 +20,16 @@ const long double min_x = -2.L;
 const long double max_x = 1.L;
 const long double min_y = -1.125L;
 const long double max_y = 1.125L;
-const long double x_skip = 0.0001L;
-const long double y_skip = 0.0001L;
+const long double x_skip = 0.001L;
+const long double y_skip = 0.001L;
 const size_t num_xs = (max_x - min_x)/x_skip;
 const size_t num_ys = (max_y - min_y)/y_skip;
 
 std::vector<Color> data(num_xs * num_ys * 3, Color(0, 0, 0));
 std::mutex data_mutex;
 
-const size_t min_iterations = 100000;
-const size_t max_iterations = 1000000;
+const size_t min_iterations = 10000;
+const size_t max_iterations = 100000; // 5000000? 1/10 prob?
 
 const double sample_probability = 1.L/4.L; // The probability a random point will be sampled
 std::vector<Point> samples;
@@ -42,6 +42,11 @@ std::vector<long double> progresses;
 auto update_freq = 100ms; // Update the user every 100ms
 int num_update_cols = 40; // Number of columns in the progress bar
 std::atomic<size_t> sections_completed = 0;
+
+const size_t num_colors = 7;
+const ColorHSV colors[num_colors] = {ColorHSV(  0, 1.f, 1.f), ColorHSV( 30, 1.f, 1.f), ColorHSV( 90, 1.f, 1.f),
+                                     ColorHSV(180, 1.f, 1.f), ColorHSV(200, 1.f, 1.f), ColorHSV(260, 1.f, 1.f),
+                                     ColorHSV(300, 1.f, 1.f)};
 
 void sample_orbits(size_t section) {
     long double area = static_cast<long double>(section_offset * num_xs); // The area this thread will cover
@@ -61,10 +66,9 @@ void sample_orbits(size_t section) {
             const long double b = y_idx*y_skip + min_y;
 
             // Check if we are in the period-2 bulb or the cardioid
+            if ((b+1)*(b+1) + a*a <= 1.L/16.L) continue;
             const long double q = std::powl((b - 1.L/4.L), 2) + b*b;
-            if ((q * (q + a - 1.L/4.L)) <= 1.L/4.L * b*b) {
-                continue;
-            }
+            if ((q * (q + a - 1.L/4.L)) <= 1.L/4.L * b*b) continue;
 
             // Start iterating
             long double new_a = a;
@@ -90,6 +94,7 @@ void sample_orbits(size_t section) {
 
 void compute_section(size_t section) {
     long double area = static_cast<long double>(section_offset * num_xs); // The area this thread will cover
+    size_t color_idx = 0;
 
     for (size_t y_idx = section; y_idx < num_ys; y_idx += num_sections) {
         progresses[section] += static_cast<long double>(num_xs)/area;
@@ -104,18 +109,21 @@ void compute_section(size_t section) {
             long double new_a = a;
             long double new_b = b;
             for (size_t i = 0; i < max_iterations; ++i) {
-                long double temp_a = new_a;
-                long double temp_b = new_b;
+                const long double temp_a = new_a;
+                const long double temp_b = new_b;
                 new_a = temp_a*temp_a - temp_b*temp_b + a;
                 new_b = 2*temp_a*temp_b + b;
 
                 if (new_a*new_a + new_b*new_b >= 4) break;
                 if (new_a < min_x || new_a > max_x || new_b < min_y || new_b > max_y) break;
 
-                size_t x = (new_a - min_x)/x_skip;
-                size_t y = (new_b - min_y)/y_skip;
-                data[y*num_xs + x] += Color(64, 64, 64);
+                const size_t x = (new_a - min_x)/x_skip;
+                const size_t y = (new_b - min_y)/y_skip;
+                const size_t idx = y*num_xs + x;
+                if (idx < 0 || idx >= data.size()) continue;
+                data[y*num_xs + x] = static_cast<Color>(colors[color_idx]);
             }
+            color_idx = (color_idx+1)%num_colors;
         }
     }
     ++sections_completed;
