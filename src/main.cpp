@@ -28,8 +28,8 @@ const size_t num_ys = (max_y - min_y)/y_skip;
 std::vector<Color> data(num_xs * num_ys * 3, Color(0, 0, 0));
 std::mutex data_mutex;
 
-const size_t min_iterations = 10000;
-const size_t max_iterations = 100000; // 5000000? 1/10 prob?
+const size_t min_iterations = 1000;
+const size_t max_iterations = 10000; // 5000000? 1/10 prob?
 
 const double sample_probability = 1.L/4.L; // The probability a random point will be sampled
 std::vector<Point> samples;
@@ -67,7 +67,7 @@ void sample_orbits(size_t section) {
 
             // Check if we are in the period-2 bulb or the cardioid
             if ((b+1)*(b+1) + a*a <= 1.L/16.L) continue;
-            const long double q = std::powl((b - 1.L/4.L), 2) + b*b;
+            const long double q = std::powl((a - 1.L/4.L), 2) + b*b;
             if ((q * (q + a - 1.L/4.L)) <= 1.L/4.L * b*b) continue;
 
             // Start iterating
