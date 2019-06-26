@@ -135,6 +135,20 @@ void compute_section(size_t section) {
     ++sections_completed;
 }
 
+void post_process(size_t section) {
+    long double area = static_cast<long double>(section_offset * num_xs); // The area this thread will cover
+
+    for (size_t y_idx = section; y_idx < num_ys; y_idx += num_sections) {
+        for (size_t x_idx = 0; x_idx < num_xs; ++x_idx) {
+            const size_t idx = y_idx*num_xs + x_idx;
+            if (data[idx].s <= 0.4) data[idx].s = std::powf(data[idx].s, modulation_factor);
+            data[idx].v = std::powf(data[idx].v, 1.f/modulation_factor);
+            progresses[section] += 1.L/area;
+        }
+    }
+    ++sections_completed;
+}
+
 void notify_user() {
     auto start_time = std::chrono::high_resolution_clock::now();
 
@@ -164,7 +178,7 @@ void notify_user() {
         int prog_bar_fill = static_cast<int>(std::round(total * num_update_cols));
         std::cout << std::setfill('#') << std::setw(prog_bar_fill) << "";
         std::cout << std::setfill(' ') << std::setw(num_update_cols - prog_bar_fill) << "";
-        std::cout << "] (" << std::setprecision(total < 0.1 ? 3 : 4) << total * 100 << "% done)\033[0m\n";
+        std::cout << "] (" << std::setprecision(total < 0.1 ? 3 : 4) << total * 100 << "% done)\033[0m\n\033[K";
 
         std::chrono::duration<long double> duration = std::chrono::high_resolution_clock::now() - start_time;
         int hours = duration.count()/3600;
@@ -225,22 +239,34 @@ int main() {
     }
     std::thread notify_compute_thread(notify_user);
 
-    // Wait for all the computations to be finished;
+    // Wait for all the computations to be finished
     for (auto it = compute_threads.begin(); it != compute_threads.end(); ++it) {
         it->join();
     }
     notify_compute_thread.join();
 
-    for (auto it = data.begin(); it != data.end(); ++it) {
-        if (it->s <= 0.4) it->s = std::powf(it->s, modulation_factor);
-        it->v = std::powf(it->v, 1.f/modulation_factor);
-    }
+    sections_completed = 0;
+    progresses = std::vector<long double>(num_sections, 0.L);
 
-    std::cout << "\r\033[?25h" << std::endl; // Show the cursor again
+    // Do the post-processing
+    std::cout << "\033[1mPost-processing\033[0m" << std::endl;
+    std::vector<std::thread> post_process_threads;
+    post_process_threads.reserve(num_sections);
+    for (size_t i = 0; i < num_sections; ++i) {
+        post_process_threads.push_back(std::thread(post_process, i));
+    }
+    std::thread notify_post_process_thread(notify_user);
+
+    // Wait for all the post-processing to be finished
+    for (auto it = post_process_threads.begin(); it != post_process_threads.end(); ++it) {
+        it->join();
+    }
+    notify_post_process_thread.join();
+
+    std::cout << "\r\033[?25h" << std::flush; // Show the cursor again
 
     // Save the image
     write_png("test.png", num_xs, num_ys, data);
-    system("open test.png");
 
     return 0;
 }
